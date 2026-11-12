@@ -16,20 +16,27 @@ def run_tests(test_target: str) -> dict:
     Возвращает статус прохождения теста и текст вывода терминала.
     """
     # запуск команды pytest через системный процесс
-    process = subprocess.run(
-        [sys.executable, "-m", "pytest", test_target, "-v", "--tb=short"],
-        capture_output=True,
-        text=True,
-    )
-    # код возврата 0 - тесты прошли, любое другое число - не прошли
-    is_passed = process.returncode == 0
-    output_text = process.stdout if process.stdout else process.stderr
+    try:
+        process = subprocess.run(
+            [sys.executable, "-m", "pytest", test_target, "-v", "--tb=short"],
+            capture_output=True,
+            text=True,
+        )
+        # код возврата 0 - тесты прошли, любое другое число - не прошли
+        is_passed = process.returncode == 0
+        output_text = process.stdout + process.stderr
 
-    return {
-        "passed": is_passed,
-        "exit_code": process.returncode,
-        "output": output_text,
-    }
+        return {
+            "passed": is_passed,
+            "exit_code": process.returncode,
+            "output": output_text,
+        }
+    except Exception as exc:
+        return {
+            "passed": False,
+            "exit_code": -1,
+            "output": f"Системная ошибка запуска тестов: {str(exc)}",
+        }
 
 def read_code_file(relative_path: str) -> dict:
     """
